@@ -1,5 +1,4 @@
 import './assets/main.css'
-
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
@@ -13,7 +12,6 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 
-// Inicializar el listener de autenticación de Firebase
 const authStore = useAuthStore()
 authStore.initAuth()
 

@@ -1,205 +1,354 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { useProductsStore } from '@/stores/products'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
+const productsStore = useProductsStore()
 const authStore = useAuthStore()
 const router = useRouter()
+const showCart = ref(false)
+const showUserMenu = ref(false)
 
-const handleGoogleLogin = async () => {
-  const success = await authStore.loginWithGoogle()
-  if (success) {
-    router.push('/products')
+onMounted(() => {
+  productsStore.loadProducts()
+})
+
+const handleLogout = async () => {
+  await authStore.logout()
+  router.push('/')
+}
+
+const getSourceColor = (source: string) => {
+  const colors: Record<string, string> = {
+    'Legacy API': 'bg-amber-500',
+    'Modern E-commerce': 'bg-blue-500',
+    'REST API': 'bg-green-500'
   }
+  return colors[source] || 'bg-gray-500'
+}
+
+const getSourceBorderColor = (source: string) => {
+  const colors: Record<string, string> = {
+    'Legacy API': 'border-amber-500',
+    'Modern E-commerce': 'border-blue-500',
+    'REST API': 'border-green-500'
+  }
+  return colors[source] || 'border-gray-500'
 }
 </script>
 
 <template>
-  <div class="login-container">
-    <div class="login-card">
-      <div class="login-header">
-        <img
-          src="@/assets/logo.svg"
-          alt="Logo"
-          class="login-logo"
-        />
-        <h1 class="login-title">Sistema de Productos</h1>
-        <p class="login-subtitle">Patrón Adapter con Vue 3</p>
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-40 border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo y Título -->
+          <div class="flex items-center space-x-4">
+            <svg class="w-10 h-10 text-primary-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            <div class="hidden sm:block">
+              <h1 class="text-xl font-bold text-gray-900">Sistema de Productos</h1>
+              <p class="text-xs text-gray-500">Patrón Adapter Multi-API</p>
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="flex items-center space-x-3">
+            <!-- Botón Carrito -->
+            <button
+              @click="showCart = !showCart"
+              class="relative p-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span
+                v-if="productsStore.cartCount > 0"
+                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+              >
+                {{ productsStore.cartCount }}
+              </span>
+            </button>
+
+            <!-- Usuario -->
+            <div class="relative">
+              <button
+                @click="showUserMenu = !showUserMenu"
+                class="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <img
+                  v-if="authStore.userPhoto"
+                  :src="authStore.userPhoto"
+                  :alt="authStore.userName"
+                  class="w-8 h-8 rounded-full border-2 border-primary-500"
+                />
+                <div v-else class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold">
+                  {{ authStore.userName.charAt(0).toUpperCase() }}
+                </div>
+                <span class="hidden md:block text-sm font-medium text-gray-700">{{ authStore.userName }}</span>
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <!-- Menú Usuario -->
+              <div
+                v-if="showUserMenu"
+                class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 animate-fade-in"
+              >
+                <div class="px-4 py-3 border-b border-gray-200">
+                  <p class="text-sm font-semibold text-gray-900">{{ authStore.userName }}</p>
+                  <p class="text-xs text-gray-500 truncate">{{ authStore.userEmail }}</p>
+                </div>
+                <button
+                  @click="handleLogout"
+                  class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center space-x-2"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+    </header>
 
-      <div class="login-content">
-        <p class="login-description">
-          Inicia sesión para acceder al sistema de gestión de productos que integra
-          múltiples fuentes de datos usando el patrón Adapter.
-        </p>
+    <!-- API Sources Info -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-amber-500 hover:shadow-lg transition-shadow">
+          <div class="flex items-center space-x-4">
+            <div class="flex-shrink-0 w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+              <span class="text-2xl">📦</span>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">Legacy API</h3>
+              <p class="text-sm text-gray-500">Sistema antiguo adaptado</p>
+            </div>
+          </div>
+        </div>
 
-        <button
-          @click="handleGoogleLogin"
-          :disabled="authStore.loading"
-          class="google-button"
-        >
-          <svg
-            class="google-icon"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              fill="#4285F4"
-            />
-            <path
-              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              fill="#34A853"
-            />
-            <path
-              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-              fill="#FBBC05"
-            />
-            <path
-              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-              fill="#EA4335"
-            />
-          </svg>
-          <span v-if="!authStore.loading">Continuar con Google</span>
-          <span v-else>Cargando...</span>
-        </button>
+        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 hover:shadow-lg transition-shadow">
+          <div class="flex items-center space-x-4">
+            <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <span class="text-2xl">🌐</span>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">E-commerce API</h3>
+              <p class="text-sm text-gray-500">API moderna anidada</p>
+            </div>
+          </div>
+        </div>
 
-        <p v-if="authStore.error" class="error-message">
-          {{ authStore.error }}
-        </p>
-      </div>
-
-      <div class="login-footer">
-        <p class="footer-text">
-          Al continuar, aceptas nuestros términos de servicio y política de privacidad
-        </p>
+        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500 hover:shadow-lg transition-shadow">
+          <div class="flex items-center space-x-4">
+            <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <span class="text-2xl">⚡</span>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">REST API</h3>
+              <p class="text-sm text-gray-500">Servicio RESTful</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- Filtros -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+      <div class="bg-white rounded-xl shadow-md p-4 flex flex-wrap items-center gap-3">
+        <span class="text-sm font-semibold text-gray-700">Categoría:</span>
+        <button
+          v-for="category in productsStore.categories"
+          :key="category"
+          @click="productsStore.setCategory(category)"
+          :class="[
+            'px-4 py-2 rounded-lg font-medium text-sm transition-all',
+            productsStore.selectedCategory === category
+              ? 'bg-primary-600 text-white shadow-md'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          ]"
+        >
+          {{ category === 'all' ? 'Todas' : category }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div v-if="productsStore.loading" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="flex flex-col items-center justify-center">
+        <div class="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+        <p class="mt-4 text-gray-600 font-medium">Cargando productos...</p>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div v-else class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div
+          v-for="product in productsStore.filteredProducts"
+          :key="product.id"
+          class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
+        >
+          <!-- Imagen -->
+          <div class="relative h-48 overflow-hidden bg-gray-100">
+            <img
+              :src="product.image"
+              :alt="product.name"
+              class="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+            />
+            <span :class="['absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-semibold text-white', getSourceColor(product.source)]">
+              {{ product.source }}
+            </span>
+          </div>
+
+          <!-- Contenido -->
+          <div class="p-5 flex-1 flex flex-col">
+            <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2 min-h-[3.5rem]">
+              {{ product.name }}
+            </h3>
+            <p class="text-sm text-gray-600 mb-4 line-clamp-2 flex-1">
+              {{ product.description }}
+            </p>
+
+            <!-- Precio y Stock -->
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-2xl font-bold text-green-600">
+                ${{ product.price.toFixed(2) }}
+              </span>
+              <div class="text-right">
+                <span v-if="product.stock > 0" class="text-xs text-green-600 font-medium">
+                  ✓ {{ product.stock }} disponibles
+                </span>
+                <span v-else class="text-xs text-red-600 font-medium">
+                  ✗ Sin stock
+                </span>
+              </div>
+            </div>
+
+            <!-- Meta -->
+            <div class="flex gap-2 mb-4 flex-wrap">
+              <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs font-medium">
+                {{ product.category }}
+              </span>
+              <span class="px-2 py-1 bg-gray-100 text-gray-500 rounded-md text-xs">
+                ID: {{ product.id }}
+              </span>
+            </div>
+
+            <!-- Botón -->
+            <button
+              @click="productsStore.addToCart(product)"
+              :disabled="product.stock === 0"
+              class="w-full py-3 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-primary-600 text-white hover:bg-primary-700 active:scale-95"
+            >
+              Agregar al Carrito
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cart Sidebar -->
+    <transition
+      enter-active-class="transition-opacity duration-300"
+      leave-active-class="transition-opacity duration-300"
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="showCart"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50"
+        @click="showCart = false"
+      ></div>
+    </transition>
+
+    <transition
+      enter-active-class="transition-transform duration-300"
+      leave-active-class="transition-transform duration-300"
+      enter-from-class="translate-x-full"
+      leave-to-class="translate-x-full"
+    >
+      <div v-if="showCart" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-primary-600 to-indigo-600">
+          <h2 class="text-2xl font-bold text-white">Carrito</h2>
+          <button
+            @click="showCart = false"
+            class="p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Empty Cart -->
+        <div v-if="productsStore.cart.length === 0" class="flex-1 flex flex-col items-center justify-center p-6">
+          <svg class="w-24 h-24 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <p class="text-gray-500 text-lg font-medium">El carrito está vacío</p>
+          <p class="text-gray-400 text-sm mt-2">Agrega productos para continuar</p>
+        </div>
+
+        <!-- Cart Items -->
+        <div v-else class="flex-1 overflow-y-auto p-4 space-y-3">
+          <div
+            v-for="(item, index) in productsStore.cart"
+            :key="index"
+            class="bg-gray-50 rounded-lg p-4 flex gap-4 hover:bg-gray-100 transition-colors"
+          >
+            <img
+              :src="item.image"
+              :alt="item.name"
+              class="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+            />
+            <div class="flex-1 min-w-0">
+              <h4 class="font-semibold text-gray-900 truncate">{{ item.name }}</h4>
+              <p class="text-lg font-bold text-green-600 mt-1">${{ item.price.toFixed(2) }}</p>
+            </div>
+            <button
+              @click="productsStore.removeFromCart(index)"
+              class="flex-shrink-0 w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div v-if="productsStore.cart.length > 0" class="border-t border-gray-200 p-6 bg-gray-50 space-y-4">
+          <div class="flex items-center justify-between text-xl font-bold">
+            <span class="text-gray-700">Total:</span>
+            <span class="text-green-600">${{ productsStore.cartTotal.toFixed(2) }}</span>
+          </div>
+          <button class="w-full py-4 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors shadow-lg">
+            Proceder al Pago
+          </button>
+          <button
+            @click="productsStore.clearCart()"
+            class="w-full py-3 bg-white text-red-600 font-semibold rounded-lg border-2 border-red-600 hover:bg-red-50 transition-colors"
+          >
+            Vaciar Carrito
+          </button>
+        </div>
+      </div>
+    </transition>
   </div>
+
+  <!-- Click outside to close menus -->
+  <div
+    v-if="showUserMenu"
+    @click="showUserMenu = false"
+    class="fixed inset-0 z-30"
+  ></div>
 </template>
-
-<style scoped>
-.login-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 1rem;
-}
-
-.login-card {
-  background: white;
-  border-radius: 1rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 450px;
-  width: 100%;
-  overflow: hidden;
-}
-
-.login-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2.5rem 2rem;
-  text-align: center;
-  color: white;
-}
-
-.login-logo {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 1rem;
-  filter: brightness(0) invert(1);
-}
-
-.login-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.login-subtitle {
-  font-size: 0.95rem;
-  opacity: 0.9;
-}
-
-.login-content {
-  padding: 2.5rem 2rem;
-}
-
-.login-description {
-  text-align: center;
-  color: #666;
-  margin-bottom: 2rem;
-  line-height: 1.6;
-}
-
-.google-button {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 0.875rem 1.5rem;
-  background: white;
-  border: 2px solid #ddd;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #444;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.google-button:hover:not(:disabled) {
-  background: #f8f8f8;
-  border-color: #ccc;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.google-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.google-icon {
-  width: 24px;
-  height: 24px;
-}
-
-.error-message {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: #fee;
-  border: 1px solid #fcc;
-  border-radius: 0.5rem;
-  color: #c33;
-  font-size: 0.875rem;
-  text-align: center;
-}
-
-.login-footer {
-  padding: 1.5rem 2rem;
-  background: #f8f8f8;
-  border-top: 1px solid #eee;
-}
-
-.footer-text {
-  text-align: center;
-  font-size: 0.75rem;
-  color: #999;
-  line-height: 1.5;
-}
-
-@media (max-width: 480px) {
-  .login-card {
-    border-radius: 0;
-  }
-
-  .login-header {
-    padding: 2rem 1.5rem;
-  }
-
-  .login-content {
-    padding: 2rem 1.5rem;
-  }
-}
-</style>

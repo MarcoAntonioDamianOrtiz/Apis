@@ -14,29 +14,18 @@ const router = createRouter({
       name: 'products',
       component: () => import('../views/ProductsView.vue'),
       meta: { requiresAuth: true }
-    },
-    {
-      path: '/about',
-      name: 'about',
-      component: () => import('../views/AboutView.vue')
     }
   ]
 })
 
-// Guard de navegación para proteger rutas
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
 
-  // Si la ruta requiere autenticación y el usuario no está autenticado
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/')
-  }
-  // Si el usuario está autenticado y trata de ir al login
-  else if (to.path === '/' && authStore.isAuthenticated) {
+  } else if (to.path === '/' && authStore.isAuthenticated) {
     next('/products')
-  }
-  // En cualquier otro caso, permitir la navegación
-  else {
+  } else {
     next()
   }
 })
