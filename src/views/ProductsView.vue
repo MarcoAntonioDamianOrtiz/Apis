@@ -9,6 +9,7 @@ const authStore = useAuthStore()
 const router = useRouter()
 const showCart = ref(false)
 const showUserMenu = ref(false)
+const quantities = ref<Record<string, number>>({})
 
 onMounted(() => {
   productsStore.loadProducts()
@@ -27,15 +28,39 @@ const getSourceColor = (source: string) => {
   }
   return colors[source] || 'bg-gray-500'
 }
+
+const incrementQuantity = (productId: string) => {
+  const product = productsStore.filteredProducts.find(p => p.id === productId)
+  if (!product) return
+
+  const currentQty = quantities.value[productId] || 0
+  if (currentQty < product.stock) {
+    quantities.value[productId] = currentQty + 1
+  }
+}
+
+const decrementQuantity = (productId: string) => {
+  const currentQty = quantities.value[productId] || 0
+  if (currentQty > 0) {
+    quantities.value[productId] = currentQty - 1
+  }
+}
+
+const addToCartWithQuantity = (product: any) => {
+  const quantity = quantities.value[product.id] || 1
+  for (let i = 0; i < quantity; i++) {
+    productsStore.addToCart(product)
+  }
+  quantities.value[product.id] = 0
+}
 </script>
 
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-    <!-- Header Mejorado -->
+    <!-- Header -->
     <header class="bg-white shadow-lg sticky top-0 z-40 border-b-2 border-indigo-100">
       <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <div class="flex items-center justify-between h-20">
-          <!-- Logo y Título -->
           <div class="flex items-center space-x-4">
             <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
               <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -48,9 +73,7 @@ const getSourceColor = (source: string) => {
             </div>
           </div>
 
-          <!-- Acciones -->
           <div class="flex items-center space-x-4">
-            <!-- Botón Carrito -->
             <button
               @click="showCart = !showCart"
               class="relative p-3 text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl transition-all shadow-lg hover:shadow-xl"
@@ -66,7 +89,6 @@ const getSourceColor = (source: string) => {
               </span>
             </button>
 
-            <!-- Usuario -->
             <div class="relative">
               <button
                 @click="showUserMenu = !showUserMenu"
@@ -87,7 +109,6 @@ const getSourceColor = (source: string) => {
                 </svg>
               </button>
 
-              <!-- Menú Usuario -->
               <div
                 v-if="showUserMenu"
                 class="absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl border border-gray-200 py-2 animate-fade-in overflow-hidden"
@@ -112,10 +133,10 @@ const getSourceColor = (source: string) => {
       </div>
     </header>
 
-    <!-- API Sources Info - Mejorado -->
+    <!-- API Sources Info -->
     <div class="max-w-7xl mx-auto px-6 lg:px-8 py-10">
       <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Fuentes de Datos</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <div class="bg-white rounded-2xl shadow-xl p-8 border-l-8 border-amber-500 hover:shadow-2xl transition-all hover:-translate-y-2 duration-300">
           <div class="flex items-center space-x-5">
             <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
@@ -154,10 +175,10 @@ const getSourceColor = (source: string) => {
       </div>
     </div>
 
-    <!-- Filtros - Mejorado -->
+    <!-- Filtros -->
     <div class="max-w-7xl mx-auto px-6 lg:px-8 pb-10">
       <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-indigo-100">
-        <div class="flex flex-wrap items-center gap-4">
+        <div class="flex flex-wrap items-center justify-center gap-4">
           <span class="text-xl font-bold text-gray-900 mr-2">Categorías:</span>
           <button
             v-for="category in productsStore.categories"
@@ -184,7 +205,7 @@ const getSourceColor = (source: string) => {
       </div>
     </div>
 
-    <!-- Products Grid - Mejorado -->
+    <!-- Products Grid -->
     <div v-else class="max-w-7xl mx-auto px-6 lg:px-8 pb-16">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         <div
@@ -192,7 +213,6 @@ const getSourceColor = (source: string) => {
           :key="product.id"
           class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col group"
         >
-          <!-- Imagen -->
           <div class="relative h-56 overflow-hidden bg-gray-100">
             <img
               :src="product.image"
@@ -204,7 +224,6 @@ const getSourceColor = (source: string) => {
             </span>
           </div>
 
-          <!-- Contenido -->
           <div class="p-6 flex-1 flex flex-col">
             <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2 min-h-[3.5rem]">
               {{ product.name }}
@@ -213,7 +232,6 @@ const getSourceColor = (source: string) => {
               {{ product.description }}
             </p>
 
-            <!-- Precio y Stock -->
             <div class="flex items-center justify-between mb-5">
               <span class="text-3xl font-black text-green-600">
                 ${{ product.price.toFixed(2) }}
@@ -228,7 +246,6 @@ const getSourceColor = (source: string) => {
               </div>
             </div>
 
-            <!-- Meta -->
             <div class="flex gap-3 mb-5 flex-wrap">
               <span class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-xl text-sm font-bold">
                 {{ product.category }}
@@ -238,10 +255,30 @@ const getSourceColor = (source: string) => {
               </span>
             </div>
 
-            <!-- Botón -->
+            <!-- Control de Cantidad -->
+            <div class="flex items-center justify-center gap-3 mb-4 bg-gray-100 rounded-xl p-3">
+              <button
+                @click="decrementQuantity(product.id)"
+                :disabled="!quantities[product.id] || quantities[product.id] === 0"
+                class="w-10 h-10 bg-white rounded-lg font-bold text-xl text-gray-700 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shadow"
+              >
+                −
+              </button>
+              <span class="text-2xl font-bold text-gray-900 min-w-[3rem] text-center">
+                {{ quantities[product.id] || 0 }}
+              </span>
+              <button
+                @click="incrementQuantity(product.id)"
+                :disabled="product.stock === 0 || (quantities[product.id] || 0) >= product.stock"
+                class="w-10 h-10 bg-white rounded-lg font-bold text-xl text-gray-700 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shadow"
+              >
+                +
+              </button>
+            </div>
+
             <button
-              @click="productsStore.addToCart(product)"
-              :disabled="product.stock === 0"
+              @click="addToCartWithQuantity(product)"
+              :disabled="product.stock === 0 || !quantities[product.id] || quantities[product.id] === 0"
               class="w-full py-4 rounded-xl font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 active:scale-95 shadow-lg hover:shadow-xl"
             >
               🛒 Agregar al Carrito
@@ -272,7 +309,6 @@ const getSourceColor = (source: string) => {
       leave-to-class="translate-x-full"
     >
       <div v-if="showCart" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
-        <!-- Header -->
         <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-600 to-emerald-600">
           <h2 class="text-2xl font-bold text-white">🛒 Mi Carrito</h2>
           <button
@@ -285,7 +321,6 @@ const getSourceColor = (source: string) => {
           </button>
         </div>
 
-        <!-- Empty Cart -->
         <div v-if="productsStore.cart.length === 0" class="flex-1 flex flex-col items-center justify-center p-6">
           <svg class="w-32 h-32 text-gray-300 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -294,7 +329,6 @@ const getSourceColor = (source: string) => {
           <p class="text-gray-400 text-base mt-2">Agrega productos para continuar</p>
         </div>
 
-        <!-- Cart Items -->
         <div v-else class="flex-1 overflow-y-auto p-4 space-y-3">
           <div
             v-for="(item, index) in productsStore.cart"
@@ -321,7 +355,6 @@ const getSourceColor = (source: string) => {
           </div>
         </div>
 
-        <!-- Footer -->
         <div v-if="productsStore.cart.length > 0" class="border-t border-gray-200 p-6 bg-gray-50 space-y-4">
           <div class="flex items-center justify-between text-2xl font-black">
             <span class="text-gray-700">Total:</span>
@@ -341,7 +374,6 @@ const getSourceColor = (source: string) => {
     </transition>
   </div>
 
-  <!-- Click outside to close menus -->
   <div
     v-if="showUserMenu"
     @click="showUserMenu = false"
