@@ -8,6 +8,7 @@ const productsStore = useProductsStore()
 const authStore = useAuthStore()
 const router = useRouter()
 const showCart = ref(false)
+const showUserMenu = ref(false)
 
 onMounted(() => {
   productsStore.loadProducts()
@@ -20,808 +21,337 @@ const handleLogout = async () => {
 
 const getSourceColor = (source: string) => {
   const colors: Record<string, string> = {
-    'Legacy API': 'amber',
-    'Modern E-commerce': 'blue',
-    'REST API': 'green'
+    'Legacy API': 'bg-amber-500',
+    'Modern E-commerce': 'bg-blue-500',
+    'REST API': 'bg-green-500'
   }
-  return colors[source] || 'gray'
+  return colors[source] || 'bg-gray-500'
 }
 </script>
 
 <template>
-  <div class="products-container">
-    <!-- Header -->
-    <header class="header">
-      <div class="header-content">
-        <div class="header-left">
-          <img src="@/assets/logo.svg" alt="Logo" class="header-logo" />
-          <div>
-            <h1 class="header-title">Sistema de Productos</h1>
-            <p class="header-subtitle">Patrón Adapter Multi-API</p>
-          </div>
-        </div>
-
-        <div class="header-right">
-          <div class="user-info">
-            <img
-              v-if="authStore.userPhoto"
-              :src="authStore.userPhoto"
-              :alt="authStore.userName"
-              class="user-avatar"
-            />
-            <div class="user-details">
-              <p class="user-name">{{ authStore.userName }}</p>
-              <p class="user-email">{{ authStore.userEmail }}</p>
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <!-- Header Mejorado -->
+    <header class="bg-white shadow-lg sticky top-0 z-40 border-b-2 border-indigo-100">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+          <!-- Logo y Título -->
+          <div class="flex items-center space-x-4">
+            <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-gray-900">Sistema de Productos</h1>
+              <p class="text-sm text-indigo-600 font-medium">Patrón Adapter Multi-API</p>
             </div>
           </div>
 
-          <button @click="handleLogout" class="logout-button">
-            Cerrar sesión
-          </button>
-
-          <button @click="showCart = !showCart" class="cart-button">
-            <svg
-              class="cart-icon"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <!-- Acciones -->
+          <div class="flex items-center space-x-4">
+            <!-- Botón Carrito -->
+            <button
+              @click="showCart = !showCart"
+              class="relative p-3 text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl transition-all shadow-lg hover:shadow-xl"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
-            <span class="cart-count" v-if="productsStore.cartCount > 0">
-              {{ productsStore.cartCount }}
-            </span>
-          </button>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span
+                v-if="productsStore.cartCount > 0"
+                class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-pulse"
+              >
+                {{ productsStore.cartCount }}
+              </span>
+            </button>
+
+            <!-- Usuario -->
+            <div class="relative">
+              <button
+                @click="showUserMenu = !showUserMenu"
+                class="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-xl transition-colors"
+              >
+                <img
+                  v-if="authStore.userPhoto"
+                  :src="authStore.userPhoto"
+                  :alt="authStore.userName"
+                  class="w-10 h-10 rounded-xl border-2 border-indigo-500 shadow-md"
+                />
+                <div v-else class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                  {{ authStore.userName.charAt(0).toUpperCase() }}
+                </div>
+                <span class="hidden md:block text-base font-semibold text-gray-700">{{ authStore.userName }}</span>
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <!-- Menú Usuario -->
+              <div
+                v-if="showUserMenu"
+                class="absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl border border-gray-200 py-2 animate-fade-in overflow-hidden"
+              >
+                <div class="px-5 py-4 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+                  <p class="text-base font-bold text-gray-900">{{ authStore.userName }}</p>
+                  <p class="text-sm text-gray-600 truncate mt-1">{{ authStore.userEmail }}</p>
+                </div>
+                <button
+                  @click="handleLogout"
+                  class="w-full text-left px-5 py-3 text-base text-red-600 hover:bg-red-50 transition-colors flex items-center space-x-3 font-medium"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </header>
 
-    <!-- API Sources Info -->
-    <div class="api-sources">
-      <div class="source-card amber">
-        <div class="source-icon">📦</div>
-        <div>
-          <h3>Legacy API</h3>
-          <p>Sistema antiguo adaptado</p>
-        </div>
-      </div>
-      <div class="source-card blue">
-        <div class="source-icon">🌐</div>
-        <div>
-          <h3>E-commerce API</h3>
-          <p>API moderna anidada</p>
-        </div>
-      </div>
-      <div class="source-card green">
-        <div class="source-icon">⚡</div>
-        <div>
-          <h3>REST API</h3>
-          <p>Servicio RESTful</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="filters">
-      <span class="filter-label">Categoría:</span>
-      <button
-        v-for="category in productsStore.categories"
-        :key="category"
-        @click="productsStore.setCategory(category)"
-        :class="[
-          'filter-button',
-          { active: productsStore.selectedCategory === category }
-        ]"
-      >
-        {{ category === 'all' ? 'Todas' : category }}
-      </button>
-    </div>
-
-    <!-- Products Grid -->
-    <div class="products-grid" v-if="!productsStore.loading">
-      <div
-        v-for="product in productsStore.filteredProducts"
-        :key="product.id"
-        class="product-card"
-      >
-        <div class="product-image-container">
-          <img :src="product.image" :alt="product.name" class="product-image" />
-          <span :class="['product-source', getSourceColor(product.source)]">
-            {{ product.source }}
-          </span>
-        </div>
-
-        <div class="product-details">
-          <h3 class="product-name">{{ product.name }}</h3>
-          <p class="product-description">{{ product.description }}</p>
-
-          <div class="product-footer">
-            <div class="product-price">${{ product.price.toFixed(2) }}</div>
-            <div class="product-stock">
-              <span v-if="product.stock > 0" class="stock-available">
-                ✓ {{ product.stock }} disponibles
-              </span>
-              <span v-else class="stock-unavailable">✗ Sin stock</span>
+    <!-- API Sources Info - Mejorado -->
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-10">
+      <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Fuentes de Datos</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-2xl shadow-xl p-8 border-l-8 border-amber-500 hover:shadow-2xl transition-all hover:-translate-y-2 duration-300">
+          <div class="flex items-center space-x-5">
+            <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <span class="text-4xl">📦</span>
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-gray-900">Legacy API</h3>
+              <p class="text-base text-gray-600 mt-1">Sistema antiguo adaptado</p>
             </div>
           </div>
+        </div>
 
-          <div class="product-meta">
-            <span class="product-category">{{ product.category }}</span>
-            <span class="product-id">ID: {{ product.id }}</span>
+        <div class="bg-white rounded-2xl shadow-xl p-8 border-l-8 border-blue-500 hover:shadow-2xl transition-all hover:-translate-y-2 duration-300">
+          <div class="flex items-center space-x-5">
+            <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <span class="text-4xl">🌐</span>
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-gray-900">E-commerce API</h3>
+              <p class="text-base text-gray-600 mt-1">API moderna anidada</p>
+            </div>
           </div>
+        </div>
 
+        <div class="bg-white rounded-2xl shadow-xl p-8 border-l-8 border-green-500 hover:shadow-2xl transition-all hover:-translate-y-2 duration-300">
+          <div class="flex items-center space-x-5">
+            <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <span class="text-4xl">⚡</span>
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-gray-900">REST API</h3>
+              <p class="text-base text-gray-600 mt-1">Servicio RESTful</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros - Mejorado -->
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 pb-10">
+      <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-indigo-100">
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="text-xl font-bold text-gray-900 mr-2">Categorías:</span>
           <button
-            @click="productsStore.addToCart(product)"
-            :disabled="product.stock === 0"
-            class="add-to-cart-button"
+            v-for="category in productsStore.categories"
+            :key="category"
+            @click="productsStore.setCategory(category)"
+            :class="[
+              'px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200',
+              productsStore.selectedCategory === category
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xl scale-105'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+            ]"
           >
-            Agregar al Carrito
+            {{ category === 'all' ? '📦 Todas' : `🏷️ ${category}` }}
           </button>
         </div>
       </div>
     </div>
 
-    <div v-else class="loading">
-      <div class="spinner"></div>
-      <p>Cargando productos...</p>
+    <!-- Loading -->
+    <div v-if="productsStore.loading" class="max-w-7xl mx-auto px-6 lg:px-8 py-20">
+      <div class="flex flex-col items-center justify-center">
+        <div class="w-20 h-20 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+        <p class="mt-6 text-xl text-gray-600 font-bold">Cargando productos...</p>
+      </div>
+    </div>
+
+    <!-- Products Grid - Mejorado -->
+    <div v-else class="max-w-7xl mx-auto px-6 lg:px-8 pb-16">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div
+          v-for="product in productsStore.filteredProducts"
+          :key="product.id"
+          class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col group"
+        >
+          <!-- Imagen -->
+          <div class="relative h-56 overflow-hidden bg-gray-100">
+            <img
+              :src="product.image"
+              :alt="product.name"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            />
+            <span :class="['absolute top-3 right-3 px-4 py-2 rounded-xl text-sm font-bold text-white shadow-lg', getSourceColor(product.source)]">
+              {{ product.source }}
+            </span>
+          </div>
+
+          <!-- Contenido -->
+          <div class="p-6 flex-1 flex flex-col">
+            <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2 min-h-[3.5rem]">
+              {{ product.name }}
+            </h3>
+            <p class="text-base text-gray-600 mb-5 line-clamp-2 flex-1">
+              {{ product.description }}
+            </p>
+
+            <!-- Precio y Stock -->
+            <div class="flex items-center justify-between mb-5">
+              <span class="text-3xl font-black text-green-600">
+                ${{ product.price.toFixed(2) }}
+              </span>
+              <div class="text-right">
+                <span v-if="product.stock > 0" class="text-sm text-green-600 font-bold">
+                  ✓ {{ product.stock }} disponibles
+                </span>
+                <span v-else class="text-sm text-red-600 font-bold">
+                  ✗ Sin stock
+                </span>
+              </div>
+            </div>
+
+            <!-- Meta -->
+            <div class="flex gap-3 mb-5 flex-wrap">
+              <span class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-xl text-sm font-bold">
+                {{ product.category }}
+              </span>
+              <span class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium">
+                ID: {{ product.id }}
+              </span>
+            </div>
+
+            <!-- Botón -->
+            <button
+              @click="productsStore.addToCart(product)"
+              :disabled="product.stock === 0"
+              class="w-full py-4 rounded-xl font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 active:scale-95 shadow-lg hover:shadow-xl"
+            >
+              🛒 Agregar al Carrito
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Cart Sidebar -->
-    <div v-if="showCart" class="cart-sidebar">
-      <div class="cart-header">
-        <h2>Carrito de Compras</h2>
-        <button @click="showCart = false" class="close-button">✕</button>
-      </div>
+    <transition
+      enter-active-class="transition-opacity duration-300"
+      leave-active-class="transition-opacity duration-300"
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="showCart"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50"
+        @click="showCart = false"
+      ></div>
+    </transition>
 
-      <div v-if="productsStore.cart.length === 0" class="cart-empty">
-        <p>El carrito está vacío</p>
-      </div>
+    <transition
+      enter-active-class="transition-transform duration-300"
+      leave-active-class="transition-transform duration-300"
+      enter-from-class="translate-x-full"
+      leave-to-class="translate-x-full"
+    >
+      <div v-if="showCart" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-600 to-emerald-600">
+          <h2 class="text-2xl font-bold text-white">🛒 Mi Carrito</h2>
+          <button
+            @click="showCart = false"
+            class="p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-      <div v-else class="cart-content">
-        <div class="cart-items">
+        <!-- Empty Cart -->
+        <div v-if="productsStore.cart.length === 0" class="flex-1 flex flex-col items-center justify-center p-6">
+          <svg class="w-32 h-32 text-gray-300 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <p class="text-gray-500 text-xl font-bold">El carrito está vacío</p>
+          <p class="text-gray-400 text-base mt-2">Agrega productos para continuar</p>
+        </div>
+
+        <!-- Cart Items -->
+        <div v-else class="flex-1 overflow-y-auto p-4 space-y-3">
           <div
             v-for="(item, index) in productsStore.cart"
             :key="index"
-            class="cart-item"
+            class="bg-gray-50 rounded-xl p-4 flex gap-4 hover:bg-gray-100 transition-colors"
           >
-            <img :src="item.image" :alt="item.name" class="cart-item-image" />
-            <div class="cart-item-details">
-              <p class="cart-item-name">{{ item.name }}</p>
-              <p class="cart-item-price">${{ item.price.toFixed(2) }}</p>
+            <img
+              :src="item.image"
+              :alt="item.name"
+              class="w-24 h-24 object-cover rounded-xl flex-shrink-0"
+            />
+            <div class="flex-1 min-w-0">
+              <h4 class="font-bold text-base text-gray-900 truncate">{{ item.name }}</h4>
+              <p class="text-xl font-black text-green-600 mt-2">${{ item.price.toFixed(2) }}</p>
             </div>
             <button
               @click="productsStore.removeFromCart(index)"
-              class="remove-item-button"
+              class="flex-shrink-0 w-10 h-10 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-xl transition-colors"
             >
-              ✕
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
         </div>
 
-        <div class="cart-footer">
-          <div class="cart-total">
-            <span>Total:</span>
-            <span class="total-amount">
-              ${{ productsStore.cartTotal.toFixed(2) }}
-            </span>
+        <!-- Footer -->
+        <div v-if="productsStore.cart.length > 0" class="border-t border-gray-200 p-6 bg-gray-50 space-y-4">
+          <div class="flex items-center justify-between text-2xl font-black">
+            <span class="text-gray-700">Total:</span>
+            <span class="text-green-600">${{ productsStore.cartTotal.toFixed(2) }}</span>
           </div>
-          <button class="checkout-button">Proceder al Pago</button>
-          <button @click="productsStore.clearCart()" class="clear-cart-button">
+          <button class="w-full py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-lg rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg">
+            Proceder al Pago
+          </button>
+          <button
+            @click="productsStore.clearCart()"
+            class="w-full py-3 bg-white text-red-600 font-bold rounded-xl border-2 border-red-600 hover:bg-red-50 transition-colors"
+          >
             Vaciar Carrito
           </button>
         </div>
       </div>
-    </div>
-
-    <div v-if="showCart" class="cart-overlay" @click="showCart = false"></div>
+    </transition>
   </div>
+
+  <!-- Click outside to close menus -->
+  <div
+    v-if="showUserMenu"
+    @click="showUserMenu = false"
+    class="fixed inset-0 z-30"
+  ></div>
 </template>
 
 <style scoped>
-.products-container {
-  min-height: 100vh;
-  background: linear-gradient(to bottom right, #eff6ff, #e0e7ff);
-  padding-bottom: 2rem;
-}
-
-.header {
-  background: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 1rem 0;
-  margin-bottom: 2rem;
-}
-
-.header-content {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.header-logo {
-  width: 50px;
-  height: 50px;
-}
-
-.header-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0;
-}
-
-.header-subtitle {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #e5e7eb;
-}
-
-.user-details {
-  display: none;
-}
-
-.user-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0;
-}
-
-.user-email {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin: 0;
-}
-
-.logout-button {
-  padding: 0.5rem 1rem;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-  font-size: 0.875rem;
-}
-
-.logout-button:hover {
-  background: #dc2626;
-}
-
-.cart-button {
-  position: relative;
-  padding: 0.5rem;
-  background: #10b981;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.cart-button:hover {
-  background: #059669;
-}
-
-.cart-icon {
-  width: 24px;
-  height: 24px;
-}
-
-.cart-count {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #ef4444;
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  min-width: 20px;
-  height: 20px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 6px;
-}
-
-.api-sources {
-  max-width: 1280px;
-  margin: 0 auto 2rem;
-  padding: 0 1.5rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-}
-
-.source-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  border-left: 4px solid;
-}
-
-.source-card.amber {
-  border-color: #f59e0b;
-}
-
-.source-card.blue {
-  border-color: #3b82f6;
-}
-
-.source-card.green {
-  border-color: #10b981;
-}
-
-.source-icon {
-  font-size: 2rem;
-}
-
-.source-card h3 {
-  font-size: 1rem;
-  font-weight: 700;
-  margin: 0;
-  color: #1f2937;
-}
-
-.source-card p {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0;
-}
-
-.filters {
-  max-width: 1280px;
-  margin: 0 auto 2rem;
-  padding: 1rem 1.5rem;
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.filter-label {
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.filter-button {
-  padding: 0.5rem 1rem;
-  background: #f3f4f6;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  color: #1f2937;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.filter-button:hover {
-  background: #e5e7eb;
-}
-
-.filter-button.active {
-  background: #4f46e5;
-  color: white;
-}
-
-.products-grid {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.product-card {
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-.product-image-container {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-  background: #f3f4f6;
-}
-
-.product-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.product-source {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: white;
-}
-
-.product-source.amber {
-  background: #f59e0b;
-}
-
-.product-source.blue {
-  background: #3b82f6;
-}
-
-.product-source.green {
-  background: #10b981;
-}
-
-.product-details {
-  padding: 1.25rem;
-}
-
-.product-name {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 0.5rem;
-  line-height: 1.3;
-}
-
-.product-description {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0 0 1rem;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.product-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.product-price {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #10b981;
-}
-
-.product-stock {
-  font-size: 0.875rem;
-}
-
-.stock-available {
-  color: #10b981;
-  font-weight: 500;
-}
-
-.stock-unavailable {
-  color: #ef4444;
-  font-weight: 500;
-}
-
-.product-meta {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.product-category,
-.product-id {
-  padding: 0.25rem 0.75rem;
-  background: #f3f4f6;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.add-to-cart-button {
-  width: 100%;
-  padding: 0.75rem;
-  background: #4f46e5;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-  font-size: 0.875rem;
-}
-
-.add-to-cart-button:hover:not(:disabled) {
-  background: #4338ca;
-}
-
-.add-to-cart-button:disabled {
-  background: #d1d5db;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.loading {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 4rem 1.5rem;
-  text-align: center;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #e5e7eb;
-  border-top-color: #4f46e5;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.cart-sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 100%;
-  max-width: 400px;
-  height: 100vh;
-  background: white;
-  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-}
-
-.cart-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.cart-header h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-  color: #1f2937;
-}
-
-.close-button {
-  width: 32px;
-  height: 32px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #6b7280;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.25rem;
-  transition: all 0.2s;
-}
-
-.close-button:hover {
-  color: #1f2937;
-  background: #f3f4f6;
-}
-
-.cart-empty {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6b7280;
-  font-size: 1rem;
-}
-
-.cart-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.cart-items {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem;
-}
-
-.cart-item {
-  display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  background: #f9fafb;
-  border-radius: 0.5rem;
-  margin-bottom: 0.75rem;
-  align-items: center;
-}
-
-.cart-item-image {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 0.5rem;
-  flex-shrink: 0;
-}
-
-.cart-item-details {
-  flex: 1;
-  min-width: 0;
-}
-
-.cart-item-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  margin: 0 0 0.25rem;
-  color: #1f2937;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cart-item-price {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #10b981;
-  margin: 0;
-}
-
-.remove-item-button {
-  width: 28px;
-  height: 28px;
-  background: #fee2e2;
-  border: none;
-  color: #ef4444;
-  cursor: pointer;
-  font-size: 1rem;
-  border-radius: 0.25rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.remove-item-button:hover {
-  background: #ef4444;
-  color: white;
-}
-
-.cart-footer {
-  padding: 1.5rem;
-  border-top: 2px solid #e5e7eb;
-  background: #f9fafb;
-}
-
-.cart-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 1.125rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: #1f2937;
-}
-
-.total-amount {
-  font-size: 1.75rem;
-  color: #10b981;
-}
-
-.checkout-button {
-  width: 100%;
-  padding: 1rem;
-  background: #10b981;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin-bottom: 0.5rem;
-}
-
-.checkout-button:hover {
-  background: #059669;
-}
-
-.clear-cart-button {
-  width: 100%;
-  padding: 0.75rem;
-  background: white;
-  color: #ef4444;
-  border: 2px solid #ef4444;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.875rem;
-}
-
-.clear-cart-button:hover {
-  background: #ef4444;
-  color: white;
-}
-
-.cart-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  animation: fadeIn 0.2s;
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 @keyframes fadeIn {
@@ -830,45 +360,6 @@ const getSourceColor = (source: string) => {
   }
   to {
     opacity: 1;
-  }
-}
-
-@media (min-width: 768px) {
-  .user-details {
-    display: block;
-  }
-}
-
-@media (max-width: 768px) {
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  }
-}
-
-@media (max-width: 480px) {
-  .cart-sidebar {
-    max-width: 100%;
-  }
-
-  .header-content {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .header-left {
-    justify-content: center;
-  }
-
-  .header-right {
-    justify-content: space-between;
-  }
-
-  .products-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .api-sources {
-    grid-template-columns: 1fr;
   }
 }
 </style>
